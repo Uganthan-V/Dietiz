@@ -180,7 +180,7 @@ export default StatsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1e3ec',
+    backgroundColor: '#e8f1eaff',
   },
   header: {
     flexDirection: 'row',
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   toggleButtonActive: {
-    backgroundColor: '#f1e3ec',
+    backgroundColor: '#e8f1eaff',
   },
   toggleText: {
     fontSize: 14,

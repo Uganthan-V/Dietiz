@@ -495,7 +495,7 @@ const PersonalInfoModal: React.FC<PersonalInfoModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1e3ec',
+    backgroundColor: '#e8f1eaff',
   },
   header: {
     flexDirection: 'row',

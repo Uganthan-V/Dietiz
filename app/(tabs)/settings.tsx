@@ -439,7 +439,7 @@ export default SettingsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1e3ec',
+    backgroundColor: '#e8f1eaff',
   },
   header: {
     paddingHorizontal: 20,
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: '#f1e3ec',
+    backgroundColor: '#e8f1eaff',
   },
   modalHeader: {
     flexDirection: 'row',

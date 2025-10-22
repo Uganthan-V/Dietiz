@@ -29,7 +29,7 @@ export const CustomBottomNav: React.FC<CustomBottomNavProps> = ({
   activeTab,
   onTabPress,
   backgroundColor = 'white',
-  activeBackgroundColor = '#f1e3ec',
+  activeBackgroundColor = '#e8f1eaff',
   iconColor = '#666',
   activeIconColor = '#333',
 }) => {

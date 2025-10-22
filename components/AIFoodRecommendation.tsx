@@ -7213,73 +7213,155 @@
 
 
 
-import GeminiService from "@/services/GeminiService";
-import StorageService from "@/services/StorageService";
-import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { useMealPlan } from "./MealPlanContext";
-import PersonalInfoModal from "./PersonalInfoModal";
-import { PersonalInfo, FoodItem } from "./types";
+  import GeminiService from "@/services/GeminiService";
+  import StorageService from "@/services/StorageService";
+  import { Ionicons } from "@expo/vector-icons";
+  import React, { useEffect, useState, useCallback } from "react";
+  import {
+    ActivityIndicator,
+    Alert,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+  } from "react-native";
+  import { useMealPlan } from "./MealPlanContext";
+  import PersonalInfoModal from "./PersonalInfoModal";
+  import { PersonalInfo, FoodItem } from "./types";
 
-interface AIFoodRecommendationProps {
-  visible: boolean;
-  onClose: () => void;
-  onSelectFood: (food: FoodItem) => void;
-  selectedMealType: string;
-  previousMeals: FoodItem[];
-  showPreviousMeals: boolean;
-  setShowPreviousMeals: (value: boolean) => void;
-}
+  interface AIFoodRecommendationProps {
+    visible: boolean;
+    onClose: () => void;
+    onSelectFood: (food: FoodItem) => void;
+    selectedMealType: string;
+    previousMeals: FoodItem[];
+    showPreviousMeals: boolean;
+    setShowPreviousMeals: (value: boolean) => void;
+  }
 
-const AIFoodRecommendation: React.FC<AIFoodRecommendationProps> = ({
-  visible,
-  onClose,
-  onSelectFood,
-  selectedMealType,
-  previousMeals,
-  showPreviousMeals,
-  setShowPreviousMeals,
-}) => {
-  const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
-  const [recommendations, setRecommendations] = useState<FoodItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo | null>(null);
-  const [hasApiKey, setHasApiKey] = useState(false);
-  const [hasCompletedSetup, setHasCompletedSetup] = useState(false);
+  const AIFoodRecommendation: React.FC<AIFoodRecommendationProps> = ({
+    visible,
+    onClose,
+    onSelectFood,
+    selectedMealType,
+    previousMeals,
+    showPreviousMeals,
+    setShowPreviousMeals,
+  }) => {
+    const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
+    const [recommendations, setRecommendations] = useState<FoodItem[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [personalInfo, setPersonalInfo] = useState<PersonalInfo | null>(null);
+    const [hasApiKey, setHasApiKey] = useState(false);
+    const [hasCompletedSetup, setHasCompletedSetup] = useState(false);
 
-  const { meals } = useMealPlan();
+    const { meals } = useMealPlan();
 
-  // Initialize data when modal opens
-  const initializeData = useCallback(async () => {
-    if (!visible) return;
+    // Initialize data when modal opens
+    const initializeData = useCallback(async () => {
+      if (!visible) return;
 
-    console.log("initializeData called with:", {
-      visible,
-      showPreviousMeals,
-      previousMealsLength: previousMeals.length,
-      selectedMealType,
-    });
+      console.log("initializeData called with:", {
+        visible,
+        showPreviousMeals,
+        previousMealsLength: previousMeals.length,
+        selectedMealType,
+      });
 
-    setIsLoading(true);
-    try {
-      // Check setup status
-      const setupCompleted = await StorageService.hasCompletedSetup();
-      if (setupCompleted !== hasCompletedSetup) {
-        setHasCompletedSetup(setupCompleted);
+      setIsLoading(true);
+      try {
+        // Check setup status
+        const setupCompleted = await StorageService.hasCompletedSetup();
+        if (setupCompleted !== hasCompletedSetup) {
+          setHasCompletedSetup(setupCompleted);
+        }
+
+        // Check API key
+        const apiKey = await StorageService.getGeminiApiKey();
+        const isApiKeyValid = !!apiKey;
+        if (isApiKeyValid !== hasApiKey) {
+          setHasApiKey(isApiKeyValid);
+          if (isApiKeyValid) {
+            try {
+              GeminiService.setApiKey(apiKey);
+            } catch (error) {
+              console.error("Error setting API key:", error);
+              setHasApiKey(false);
+            }
+          }
+        }
+
+        // Load personal info
+        const info = await StorageService.getPersonalInfo();
+        if (JSON.stringify(info) !== JSON.stringify(personalInfo)) {
+          setPersonalInfo(info);
+        }
+
+        console.log("Modal opened, previousMeals:", previousMeals, "selectedMealType:", selectedMealType);
+      } catch (error) {
+        console.error("Error initializing data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }, [visible, showPreviousMeals, previousMeals, selectedMealType, hasCompletedSetup, hasApiKey, personalInfo]);
+
+    useEffect(() => {
+      initializeData();
+    }, [initializeData]);
+
+    const handleGenerateRecommendations = async () => {
+      if (!hasCompletedSetup || !personalInfo) {
+        Alert.alert(
+          "Profile Setup Required",
+          "Please complete your profile setup to get personalized AI recommendations.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Complete Setup",
+              onPress: () => setShowPersonalInfoModal(true),
+            },
+          ]
+        );
+        return;
       }
 
-      // Check API key
+      if (!hasApiKey) {
+        Alert.alert(
+          "API Key Required",
+          "Please set your Gemini API key in Settings to use AI recommendations.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Go to Settings",
+              onPress: () => {
+                onClose();
+              },
+            },
+          ]
+        );
+        return;
+      }
+
+      await generateRecommendations();
+    };
+
+    const handlePersonalInfoComplete = useCallback(async (info: PersonalInfo) => {
+      try {
+        await StorageService.savePersonalInfo(info);
+        setPersonalInfo(info);
+        setHasCompletedSetup(true);
+        setShowPersonalInfoModal(false);
+        await checkApiKey();
+      } catch (error) {
+        console.error("Error saving personal info:", error);
+        Alert.alert("Error", "Failed to save personal information.");
+      }
+    }, []);
+
+    const checkApiKey = async () => {
       const apiKey = await StorageService.getGeminiApiKey();
       const isApiKeyValid = !!apiKey;
       if (isApiKeyValid !== hasApiKey) {
@@ -7293,731 +7375,649 @@ const AIFoodRecommendation: React.FC<AIFoodRecommendationProps> = ({
           }
         }
       }
-
-      // Load personal info
-      const info = await StorageService.getPersonalInfo();
-      if (JSON.stringify(info) !== JSON.stringify(personalInfo)) {
-        setPersonalInfo(info);
-      }
-
-      console.log("Modal opened, previousMeals:", previousMeals, "selectedMealType:", selectedMealType);
-    } catch (error) {
-      console.error("Error initializing data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [visible, showPreviousMeals, previousMeals, selectedMealType, hasCompletedSetup, hasApiKey, personalInfo]);
-
-  useEffect(() => {
-    initializeData();
-  }, [initializeData]);
-
-  const handleGenerateRecommendations = async () => {
-    if (!hasCompletedSetup || !personalInfo) {
-      Alert.alert(
-        "Profile Setup Required",
-        "Please complete your profile setup to get personalized AI recommendations.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Complete Setup",
-            onPress: () => setShowPersonalInfoModal(true),
-          },
-        ]
-      );
-      return;
-    }
-
-    if (!hasApiKey) {
-      Alert.alert(
-        "API Key Required",
-        "Please set your Gemini API key in Settings to use AI recommendations.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Go to Settings",
-            onPress: () => {
-              onClose();
-            },
-          },
-        ]
-      );
-      return;
-    }
-
-    await generateRecommendations();
-  };
-
-  const handlePersonalInfoComplete = useCallback(async (info: PersonalInfo) => {
-    try {
-      await StorageService.savePersonalInfo(info);
-      setPersonalInfo(info);
-      setHasCompletedSetup(true);
-      setShowPersonalInfoModal(false);
-      await checkApiKey();
-    } catch (error) {
-      console.error("Error saving personal info:", error);
-      Alert.alert("Error", "Failed to save personal information.");
-    }
-  }, []);
-
-  const checkApiKey = async () => {
-    const apiKey = await StorageService.getGeminiApiKey();
-    const isApiKeyValid = !!apiKey;
-    if (isApiKeyValid !== hasApiKey) {
-      setHasApiKey(isApiKeyValid);
-      if (isApiKeyValid) {
-        try {
-          GeminiService.setApiKey(apiKey);
-        } catch (error) {
-          console.error("Error setting API key:", error);
-          setHasApiKey(false);
-        }
-      }
-    }
-  };
-
-  const generateRecommendations = async () => {
-    if (!personalInfo) {
-      Alert.alert("Error", "Personal information is required for AI recommendations.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const recommendations = await GeminiService.generateMealRecommendations(
-        personalInfo,
-        selectedMealType,
-        meals
-      );
-      setRecommendations(recommendations);
-      setShowPreviousMeals(false);
-    } catch (error) {
-      console.error("Error generating recommendations:", error);
-      if (error instanceof Error) {
-        if (error.message.includes("API key")) {
-          Alert.alert(
-            "API Key Error",
-            "Please check your Gemini API key in Settings and try again.",
-            [
-              { text: "Cancel", style: "cancel" },
-              {
-                text: "Go to Settings",
-                onPress: () => {
-                  onClose();
-                },
-              },
-            ]
-          );
-          return;
-        }
-
-        if (error.message.includes("busy") || error.message.includes("overloaded")) {
-          Alert.alert(
-            "Service Temporarily Unavailable",
-            "The AI service is currently busy. You can try again in a few minutes, or use the fallback recommendations below.",
-            [
-              {
-                text: "Use Fallback",
-                onPress: () => {
-                  const fallbackRecommendations = getFallbackRecommendations(selectedMealType);
-                  setRecommendations(fallbackRecommendations);
-                  setShowPreviousMeals(false);
-                },
-              },
-              { text: "Try Again Later", style: "cancel" },
-            ]
-          );
-          return;
-        }
-      }
-
-      Alert.alert(
-        "Error",
-        "Failed to generate AI recommendations. Using fallback options instead."
-      );
-      const fallbackRecommendations = getFallbackRecommendations(selectedMealType);
-      setRecommendations(fallbackRecommendations);
-      setShowPreviousMeals(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getFallbackRecommendations = (mealType: string) => {
-    const fallbackMeals = {
-      breakfast: [
-        {
-          id: "fallback_breakfast_1",
-          name: "Oatmeal with Berries and Almonds",
-          calories: 280,
-          protein: 8,
-          carbs: 45,
-          fat: 6,
-          category: "breakfast",
-          ingredients: [
-            { name: "Oats", weight: "50g" },
-            { name: "Mixed Berries", weight: "100g" },
-            { name: "Almonds", weight: "15g" },
-            { name: "Milk", weight: "200ml" },
-          ],
-        },
-        // ... (other breakfast items unchanged)
-      ],
-      lunch: [
-        {
-          id: "fallback_lunch_1",
-          name: "Grilled Chicken Salad with Mixed Greens",
-          calories: 350,
-          protein: 25,
-          carbs: 15,
-          fat: 18,
-          category: "lunch",
-          ingredients: [
-            { name: "Chicken Breast", weight: "150g" },
-            { name: "Mixed Greens", weight: "100g" },
-            { name: "Olive Oil", weight: "15ml" },
-            { name: "Cherry Tomatoes", weight: "50g" },
-          ],
-        },
-        // ... (other lunch items unchanged)
-      ],
-      dinner: [
-        {
-          id: "fallback_dinner_1",
-          name: "Salmon with Roasted Vegetables",
-          calories: 420,
-          protein: 28,
-          carbs: 20,
-          fat: 22,
-          category: "dinner",
-          ingredients: [
-            { name: "Salmon Fillet", weight: "150g" },
-            { name: "Mixed Vegetables", weight: "150g" },
-            { name: "Olive Oil", weight: "15ml" },
-          ],
-        },
-        // ... (other dinner items unchanged)
-      ],
-      snacks: [
-        {
-          id: "fallback_snacks_1",
-          name: "Apple Slices with Almond Butter",
-          calories: 180,
-          protein: 4,
-          carbs: 20,
-          fat: 10,
-          category: "snacks",
-          ingredients: [
-            { name: "Apple", weight: "150g" },
-            { name: "Almond Butter", weight: "15g" },
-          ],
-        },
-        // ... (other snack items unchanged)
-      ],
     };
 
-    return fallbackMeals[mealType as keyof typeof fallbackMeals] || fallbackMeals.breakfast;
-  };
+    const generateRecommendations = async () => {
+      if (!personalInfo) {
+        Alert.alert("Error", "Personal information is required for AI recommendations.");
+        return;
+      }
 
-  const handleSelectFood = (food: FoodItem) => {
-    onSelectFood(food);
-    onClose();
-  };
+      setIsLoading(true);
+      try {
+        const recommendations = await GeminiService.generateMealRecommendations(
+          personalInfo,
+          selectedMealType,
+          meals
+        );
+        setRecommendations(recommendations);
+        setShowPreviousMeals(false);
+      } catch (error) {
+        console.error("Error generating recommendations:", error);
+        if (error instanceof Error) {
+          if (error.message.includes("API key")) {
+            Alert.alert(
+              "API Key Error",
+              "Please check your Gemini API key in Settings and try again.",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Go to Settings",
+                  onPress: () => {
+                    onClose();
+                  },
+                },
+              ]
+            );
+            return;
+          }
 
-  const handleTogglePreviousMeals = useCallback(() => {
-    console.log("Toggling previous meals, current state:", showPreviousMeals, "previousMeals length:", previousMeals.length);
-    setShowPreviousMeals(!showPreviousMeals);
-  }, [showPreviousMeals, previousMeals, setShowPreviousMeals]);
+          if (error.message.includes("busy") || error.message.includes("overloaded")) {
+            Alert.alert(
+              "Service Temporarily Unavailable",
+              "The AI service is currently busy. You can try again in a few minutes, or use the fallback recommendations below.",
+              [
+                {
+                  text: "Use Fallback",
+                  onPress: () => {
+                    const fallbackRecommendations = getFallbackRecommendations(selectedMealType);
+                    setRecommendations(fallbackRecommendations);
+                    setShowPreviousMeals(false);
+                  },
+                },
+                { text: "Try Again Later", style: "cancel" },
+              ]
+            );
+            return;
+          }
+        }
 
-  const FoodCard = ({ food }: { food: FoodItem }) => (
-    <TouchableOpacity style={styles.foodCard} onPress={() => handleSelectFood(food)}>
-      <View style={styles.foodHeader}>
-        <Text style={styles.foodName}>{food.name}</Text>
-        <Text style={styles.foodCalories}>{food.calories} kcal</Text>
-      </View>
-      <View style={styles.nutritionInfo}>
-        <View style={styles.nutritionItem}>
-          <Text style={styles.nutritionLabel}>Protein</Text>
-          <Text style={styles.nutritionValue}>{food.protein}g</Text>
+        Alert.alert(
+          "Error",
+          "Failed to generate AI recommendations. Using fallback options instead."
+        );
+        const fallbackRecommendations = getFallbackRecommendations(selectedMealType);
+        setRecommendations(fallbackRecommendations);
+        setShowPreviousMeals(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const getFallbackRecommendations = (mealType: string) => {
+      const fallbackMeals = {
+        breakfast: [
+          {
+            id: "fallback_breakfast_1",
+            name: "Oatmeal with Berries and Almonds",
+            calories: 280,
+            protein: 8,
+            carbs: 45,
+            fat: 6,
+            category: "breakfast",
+            ingredients: [
+              { name: "Oats", weight: "50g" },
+              { name: "Mixed Berries", weight: "100g" },
+              { name: "Almonds", weight: "15g" },
+              { name: "Milk", weight: "200ml" },
+            ],
+          },
+          // ... (other breakfast items unchanged)
+        ],
+        lunch: [
+          {
+            id: "fallback_lunch_1",
+            name: "Grilled Chicken Salad with Mixed Greens",
+            calories: 350,
+            protein: 25,
+            carbs: 15,
+            fat: 18,
+            category: "lunch",
+            ingredients: [
+              { name: "Chicken Breast", weight: "150g" },
+              { name: "Mixed Greens", weight: "100g" },
+              { name: "Olive Oil", weight: "15ml" },
+              { name: "Cherry Tomatoes", weight: "50g" },
+            ],
+          },
+          // ... (other lunch items unchanged)
+        ],
+        dinner: [
+          {
+            id: "fallback_dinner_1",
+            name: "Salmon with Roasted Vegetables",
+            calories: 420,
+            protein: 28,
+            carbs: 20,
+            fat: 22,
+            category: "dinner",
+            ingredients: [
+              { name: "Salmon Fillet", weight: "150g" },
+              { name: "Mixed Vegetables", weight: "150g" },
+              { name: "Olive Oil", weight: "15ml" },
+            ],
+          },
+          // ... (other dinner items unchanged)
+        ],
+        snacks: [
+          {
+            id: "fallback_snacks_1",
+            name: "Apple Slices with Almond Butter",
+            calories: 180,
+            protein: 4,
+            carbs: 20,
+            fat: 10,
+            category: "snacks",
+            ingredients: [
+              { name: "Apple", weight: "150g" },
+              { name: "Almond Butter", weight: "15g" },
+            ],
+          },
+          // ... (other snack items unchanged)
+        ],
+      };
+
+      return fallbackMeals[mealType as keyof typeof fallbackMeals] || fallbackMeals.breakfast;
+    };
+
+    const handleSelectFood = (food: FoodItem) => {
+      onSelectFood(food);
+      onClose();
+    };
+
+    const handleTogglePreviousMeals = useCallback(() => {
+      console.log("Toggling previous meals, current state:", showPreviousMeals, "previousMeals length:", previousMeals.length);
+      setShowPreviousMeals(!showPreviousMeals);
+    }, [showPreviousMeals, previousMeals, setShowPreviousMeals]);
+
+    const FoodCard = ({ food }: { food: FoodItem }) => (
+      <TouchableOpacity style={styles.foodCard} onPress={() => handleSelectFood(food)}>
+        <View style={styles.foodHeader}>
+          <Text style={styles.foodName}>{food.name}</Text>
+          <Text style={styles.foodCalories}>{food.calories} kcal</Text>
         </View>
-        <View style={styles.nutritionItem}>
-          <Text style={styles.nutritionLabel}>Carbs</Text>
-          <Text style={styles.nutritionValue}>{food.carbs}g</Text>
+        <View style={styles.nutritionInfo}>
+          <View style={styles.nutritionItem}>
+            <Text style={styles.nutritionLabel}>Protein</Text>
+            <Text style={styles.nutritionValue}>{food.protein}g</Text>
+          </View>
+          <View style={styles.nutritionItem}>
+            <Text style={styles.nutritionLabel}>Carbs</Text>
+            <Text style={styles.nutritionValue}>{food.carbs}g</Text>
+          </View>
+          <View style={styles.nutritionItem}>
+            <Text style={styles.nutritionLabel}>Fat</Text>
+            <Text style={styles.nutritionValue}>{food.fat}g</Text>
+          </View>
         </View>
-        <View style={styles.nutritionItem}>
-          <Text style={styles.nutritionLabel}>Fat</Text>
-          <Text style={styles.nutritionValue}>{food.fat}g</Text>
-        </View>
-      </View>
-      {food.ingredients && food.ingredients.length > 0 && (
-        <View style={styles.ingredientsInfo}>
-          <Text style={styles.ingredientsTitle}>Main Ingredients:</Text>
-          {food.ingredients.map((ingredient, index) => (
-            <Text key={index} style={styles.ingredientText}>
-              • {ingredient.name}: {ingredient.weight}
+        {food.ingredients && food.ingredients.length > 0 && (
+          <View style={styles.ingredientsInfo}>
+            <Text style={styles.ingredientsTitle}>Main Ingredients:</Text>
+            {food.ingredients.map((ingredient, index) => (
+              <Text key={index} style={styles.ingredientText}>
+                • {ingredient.name}: {ingredient.weight}
+              </Text>
+            ))}
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+
+    const renderContent = () => {
+      if (showPersonalInfoModal) {
+        return (
+          <PersonalInfoModal
+            visible={showPersonalInfoModal}
+            onClose={() => setShowPersonalInfoModal(false)}
+            onComplete={handlePersonalInfoComplete}
+          />
+        );
+      }
+
+      if (isLoading) {
+        return (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#4CAF50" />
+            <Text style={styles.loadingText}>Generating personalized recommendations...</Text>
+          </View>
+        );
+      }
+
+      if (recommendations.length === 0 && !showPreviousMeals) {
+        return (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="restaurant-outline" size={64} color="#CCC" />
+            <Text style={styles.emptyTitle}>AI Recommendations</Text>
+            <Text style={styles.emptyDescription}>
+              Get personalized meal suggestions based on your profile and goals.
             </Text>
-          ))}
-        </View>
-      )}
-    </TouchableOpacity>
-  );
 
-  const renderContent = () => {
-    if (showPersonalInfoModal) {
+            {!hasCompletedSetup && (
+              <View style={styles.setupSection}>
+                <Text style={styles.setupTitle}>Complete Your Profile</Text>
+                <Text style={styles.setupDescription}>
+                  We need your age, gender, height, weight, activity level, and goals to provide personalized recommendations.
+                </Text>
+                <TouchableOpacity
+                  style={styles.setupButton}
+                  onPress={() => setShowPersonalInfoModal(true)}
+                >
+                  <Ionicons name="person-add" size={20} color="white" />
+                  <Text style={styles.setupButtonText}>Complete Profile Setup</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {hasCompletedSetup && !hasApiKey && (
+              <View style={styles.setupSection}>
+                <Text style={styles.setupTitle}>Set Up AI Recommendations</Text>
+                <Text style={styles.setupDescription}>
+                  Add your Gemini API key to get personalized AI-powered meal suggestions.
+                </Text>
+                <TouchableOpacity
+                  style={styles.setupButton}
+                  onPress={() => {
+                    onClose();
+                  }}
+                >
+                  <Ionicons name="key" size={20} color="white" />
+                  <Text style={styles.setupButtonText}>Add API Key</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {hasCompletedSetup && hasApiKey && (
+              <View style={styles.setupSection}>
+                <Text style={styles.setupTitle}>Ready for AI Recommendations</Text>
+                <Text style={styles.setupDescription}>
+                  Your profile is complete and API key is configured. Generate personalized meal suggestions or view previous meals.
+                </Text>
+                <TouchableOpacity
+                  style={styles.generateButton}
+                  onPress={handleGenerateRecommendations}
+                >
+                  <Ionicons name="bulb" size={20} color="white" />
+                  <Text style={styles.generateButtonText}>Generate AI Recommendations</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.toggleButton} onPress={handleTogglePreviousMeals}>
+                  <Ionicons name="time" size={20} color="#4CAF50" />
+                  <Text style={styles.toggleButtonText}>Show Previous Meals</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        );
+      }
+
       return (
-        <PersonalInfoModal
-          visible={showPersonalInfoModal}
-          onClose={() => setShowPersonalInfoModal(false)}
-          onComplete={handlePersonalInfoComplete}
-        />
-      );
-    }
-
-    if (isLoading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Generating personalized recommendations...</Text>
-        </View>
-      );
-    }
-
-    if (recommendations.length === 0 && !showPreviousMeals) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="restaurant-outline" size={64} color="#CCC" />
-          <Text style={styles.emptyTitle}>AI Recommendations</Text>
-          <Text style={styles.emptyDescription}>
-            Get personalized meal suggestions based on your profile and goals.
-          </Text>
-
-          {!hasCompletedSetup && (
-            <View style={styles.setupSection}>
-              <Text style={styles.setupTitle}>Complete Your Profile</Text>
-              <Text style={styles.setupDescription}>
-                We need your age, gender, height, weight, activity level, and goals to provide personalized recommendations.
+        <ScrollView style={styles.recommendationsContainer} showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{showPreviousMeals ? "Previous Meals" : "AI Recommendations"}</Text>
+            <Text style={styles.headerSubtitle}>Personalized for {personalInfo?.name || "you"}</Text>
+            <TouchableOpacity style={styles.toggleButton} onPress={handleTogglePreviousMeals}>
+              <Ionicons
+                name={showPreviousMeals ? "bulb" : "time"}
+                size={20}
+                color="#4CAF50"
+              />
+              <Text style={styles.toggleButtonText}>
+                {showPreviousMeals ? "Show AI Recommendations" : "Show Previous Meals"}
               </Text>
-              <TouchableOpacity
-                style={styles.setupButton}
-                onPress={() => setShowPersonalInfoModal(true)}
-              >
-                <Ionicons name="person-add" size={20} color="white" />
-                <Text style={styles.setupButtonText}>Complete Profile Setup</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+            </TouchableOpacity>
+            {personalInfo && (
+              <View style={styles.profileInfo}>
+                <Text style={styles.profileText}>
+                  {personalInfo.age} years old • {personalInfo.gender} • {personalInfo.weight}kg • {personalInfo.height}cm
+                </Text>
+                <Text style={styles.profileText}>
+                  Goal: {personalInfo.goal.replace("_", " ")} • Target: {personalInfo.targetCalories} kcal
+                </Text>
+                <View style={styles.recommendedMeals}>
+                  <Text style={styles.recommendedMealsTitle}>
+                    {showPreviousMeals ? `Previous ${selectedMealType} Meals` : `Recommended Meals for ${selectedMealType}`}
+                  </Text>
+                  
+                </View>
+              </View>
+            )}
+          </View>
 
-          {hasCompletedSetup && !hasApiKey && (
-            <View style={styles.setupSection}>
-              <Text style={styles.setupTitle}>Set Up AI Recommendations</Text>
-              <Text style={styles.setupDescription}>
-                Add your Gemini API key to get personalized AI-powered meal suggestions.
+          <View style={styles.recommendationsList}>
+            {(showPreviousMeals ? previousMeals : recommendations).length === 0 ? (
+              <Text style={styles.emptyMealsText}>
+                No {showPreviousMeals ? "previous" : "recommended"} {selectedMealType} meals available.
               </Text>
-              <TouchableOpacity
-                style={styles.setupButton}
-                onPress={() => {
-                  onClose();
-                }}
-              >
-                <Ionicons name="key" size={20} color="white" />
-                <Text style={styles.setupButtonText}>Add API Key</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+            ) : (
+              (showPreviousMeals ? previousMeals : recommendations).map((food) => (
+                <FoodCard key={food.id} food={food} />
+              ))
+            )}
+          </View>
 
-          {hasCompletedSetup && hasApiKey && (
-            <View style={styles.setupSection}>
-              <Text style={styles.setupTitle}>Ready for AI Recommendations</Text>
-              <Text style={styles.setupDescription}>
-                Your profile is complete and API key is configured. Generate personalized meal suggestions or view previous meals.
-              </Text>
-              <TouchableOpacity
-                style={styles.generateButton}
-                onPress={handleGenerateRecommendations}
-              >
-                <Ionicons name="bulb" size={20} color="white" />
-                <Text style={styles.generateButtonText}>Generate AI Recommendations</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.toggleButton} onPress={handleTogglePreviousMeals}>
-                <Ionicons name="time" size={20} color="#4CAF50" />
-                <Text style={styles.toggleButtonText}>Show Previous Meals</Text>
-              </TouchableOpacity>
-            </View>
+          {!showPreviousMeals && (
+            <TouchableOpacity style={styles.regenerateButton} onPress={handleGenerateRecommendations}>
+              <Ionicons name="refresh" size={20} color="#4CAF50" />
+              <Text style={styles.regenerateButtonText}>Generate New Recommendations</Text>
+            </TouchableOpacity>
           )}
-        </View>
+        </ScrollView>
       );
-    }
+    };
 
     return (
-      <ScrollView style={styles.recommendationsContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{showPreviousMeals ? "Previous Meals" : "AI Recommendations"}</Text>
-          <Text style={styles.headerSubtitle}>Personalized for {personalInfo?.name || "you"}</Text>
-          <TouchableOpacity style={styles.toggleButton} onPress={handleTogglePreviousMeals}>
-            <Ionicons
-              name={showPreviousMeals ? "bulb" : "time"}
-              size={20}
-              color="#4CAF50"
-            />
-            <Text style={styles.toggleButtonText}>
-              {showPreviousMeals ? "Show AI Recommendations" : "Show Previous Meals"}
-            </Text>
-          </TouchableOpacity>
-          {personalInfo && (
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileText}>
-                {personalInfo.age} years old • {personalInfo.gender} • {personalInfo.weight}kg • {personalInfo.height}cm
-              </Text>
-              <Text style={styles.profileText}>
-                Goal: {personalInfo.goal.replace("_", " ")} • Target: {personalInfo.targetCalories} kcal
-              </Text>
-              <View style={styles.recommendedMeals}>
-                <Text style={styles.recommendedMealsTitle}>
-                  {showPreviousMeals ? `Previous ${selectedMealType} Meals` : `Recommended Meals for ${selectedMealType}`}
-                </Text>
-                
-              </View>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.recommendationsList}>
-          {(showPreviousMeals ? previousMeals : recommendations).length === 0 ? (
-            <Text style={styles.emptyMealsText}>
-              No {showPreviousMeals ? "previous" : "recommended"} {selectedMealType} meals available.
-            </Text>
-          ) : (
-            (showPreviousMeals ? previousMeals : recommendations).map((food) => (
-              <FoodCard key={food.id} food={food} />
-            ))
-          )}
-        </View>
-
-        {!showPreviousMeals && (
-          <TouchableOpacity style={styles.regenerateButton} onPress={handleGenerateRecommendations}>
-            <Ionicons name="refresh" size={20} color="#4CAF50" />
-            <Text style={styles.regenerateButtonText}>Generate New Recommendations</Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={onClose}
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text>AI Food Recommendations</Text>
+            <View />
+          </View>
+          {renderContent()}
+        </SafeAreaView>
+      </Modal>
     );
   };
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <SafeAreaView style={styles.container}>
-        <View style={styles.modalHeader}>
-          <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color="#333" />
-          </TouchableOpacity>
-          <Text>AI Food Recommendations</Text>
-          <View />
-        </View>
-        {renderContent()}
-      </SafeAreaView>
-    </Modal>
-  );
-};
+  export default AIFoodRecommendation;
 
-export default AIFoodRecommendation;
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#e8f1eaff",
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      paddingBottom: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: "#E0E0E0",
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 40,
+    },
+    loadingText: {
+      fontSize: 16,
+      color: "#666",
+      marginTop: 16,
+      textAlign: "center",
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 40,
+    },
+    emptyTitle: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: "#333",
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptyDescription: {
+      fontSize: 16,
+      color: "#666",
+      textAlign: "center",
+      marginBottom: 32,
+    },
+    setupSection: {
+      alignItems: "center",
+      marginTop: 20,
+    },
+    setupTitle: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: "#333",
+      marginBottom: 8,
+    },
+    setupDescription: {
+      fontSize: 14,
+      color: "#666",
+      textAlign: "center",
+      marginBottom: 24,
+      lineHeight: 20,
+    },
+    setupButton: {
+      backgroundColor: "#4CAF50",
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    setupButtonText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    generateButton: {
+      backgroundColor: "#2196F3",
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    generateButtonText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    toggleButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 12,
+      marginHorizontal: 20,
+      marginTop: 12,
+      backgroundColor: "#E8F5E8",
+      borderRadius: 12,
+      gap: 8,
+    },
+    toggleButtonText: {
+      fontSize: 16,
+      color: "#4CAF50",
+      fontWeight: "600",
+    },
+    profileInfo: {
+      backgroundColor: "#E8F5E8",
+      padding: 12,
+      borderRadius: 8,
+      marginTop: 8,
+    },
+    profileText: {
+      fontSize: 12,
+      color: "#4CAF50",
+      fontWeight: "500",
+    },
+    recommendedMeals: {
+      marginTop: 12,
+    },
+    recommendedMealsTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: "#333",
+      marginBottom: 8,
+    },
+    recommendedMealItem: {
+      marginBottom: 12,
+    },
+    recommendedMealName: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: "#333",
+    },
+    recommendedMealMacros: {
+      fontSize: 12,
+      color: "#666",
+      marginTop: 4,
+    },
+    recommendedMealIngredients: {
+      marginTop: 4,
+    },
+    recommendedMealIngredient: {
+      fontSize: 12,
+      color: "#666",
+    },
+    recommendationsList: {
+      paddingHorizontal: 20,
+      gap: 12,
+    },
+    foodCard: {
+      backgroundColor: "white",
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 12,
+    },
+    foodHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    foodName: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: "#333",
+      flex: 1,
+    },
+    foodCalories: {
+      fontSize: 14,
+      color: "#4CAF50",
+      fontWeight: "600",
+    },
+    nutritionInfo: {
+      flexDirection: "row",
+      gap: 16,
+      marginBottom: 12,
+    },
+    nutritionItem: {
+      flex: 1,
+    },
+    nutritionLabel: {
+      fontSize: 12,
+      color: "#666",
+      marginBottom: 2,
+    },
+    nutritionValue: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: "#333",
+    },
+    ingredientsInfo: {
+      marginTop: 8,
+    },
+    ingredientsTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: "#333",
+      marginBottom: 4,
+    },
+    ingredientText: {
+      fontSize: 12,
+      color: "#666",
+    },
+    regenerateButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 16,
+      marginHorizontal: 20,
+      marginTop: 20,
+      marginBottom: 20,
+      backgroundColor: "#E8F5E8",
+      borderRadius: 12,
+      gap: 8,
+    },
+    regenerateButtonText: {
+      fontSize: 16,
+      color: "#4CAF50",
+      fontWeight: "600",
+    },
+    recommendationsContainer: {
+      flex: 1,
+    },
+    header: {
+      paddingHorizontal: 20,
+      paddingVertical: 20,
+    },
+    headerTitle: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: "#333",
+      marginBottom: 4,
+    },
+    headerSubtitle: {
+      fontSize: 16,
+      color: "#666",
+      marginBottom: 12,
+    },
+    emptyMealsText: {
+      fontSize: 16,
+      color: "#666",
+      textAlign: "center",
+      marginVertical: 20,
+    },
+  } as const);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f1e3ec",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: "#666",
-    marginTop: 16,
-    textAlign: "center",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyDescription: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  setupSection: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  setupTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
-  },
-  setupDescription: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 20,
-  },
-  setupButton: {
-    backgroundColor: "#4CAF50",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  setupButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  generateButton: {
-    backgroundColor: "#2196F3",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  generateButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  toggleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    marginHorizontal: 20,
-    marginTop: 12,
-    backgroundColor: "#E8F5E8",
-    borderRadius: 12,
-    gap: 8,
-  },
-  toggleButtonText: {
-    fontSize: 16,
-    color: "#4CAF50",
-    fontWeight: "600",
-  },
-  profileInfo: {
-    backgroundColor: "#E8F5E8",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  profileText: {
-    fontSize: 12,
-    color: "#4CAF50",
-    fontWeight: "500",
-  },
-  recommendedMeals: {
-    marginTop: 12,
-  },
-  recommendedMealsTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
-  },
-  recommendedMealItem: {
-    marginBottom: 12,
-  },
-  recommendedMealName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
-  recommendedMealMacros: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 4,
-  },
-  recommendedMealIngredients: {
-    marginTop: 4,
-  },
-  recommendedMealIngredient: {
-    fontSize: 12,
-    color: "#666",
-  },
-  recommendationsList: {
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  foodCard: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-  },
-  foodHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  foodName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    flex: 1,
-  },
-  foodCalories: {
-    fontSize: 14,
-    color: "#4CAF50",
-    fontWeight: "600",
-  },
-  nutritionInfo: {
-    flexDirection: "row",
-    gap: 16,
-    marginBottom: 12,
-  },
-  nutritionItem: {
-    flex: 1,
-  },
-  nutritionLabel: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 2,
-  },
-  nutritionValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
-  ingredientsInfo: {
-    marginTop: 8,
-  },
-  ingredientsTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  ingredientText: {
-    fontSize: 12,
-    color: "#666",
-  },
-  regenerateButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 20,
-    backgroundColor: "#E8F5E8",
-    borderRadius: 12,
-    gap: 8,
-  },
-  regenerateButtonText: {
-    fontSize: 16,
-    color: "#4CAF50",
-    fontWeight: "600",
-  },
-  recommendationsContainer: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 12,
-  },
-  emptyMealsText: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    marginVertical: 20,
-  },
-} as const);
-
-interface Styles {
-  container: any;
-  modalHeader: any;
-  loadingContainer: any;
-  loadingText: any;
-  emptyContainer: any;
-  emptyTitle: any;
-  emptyDescription: any;
-  setupSection: any;
-  setupTitle: any;
-  setupDescription: any;
-  setupButton: any;
-  setupButtonText: any;
-  generateButton: any;
-  generateButtonText: any;
-  toggleButton: any;
-  toggleButtonText: any;
-  profileInfo: any;
-  profileText: any;
-  recommendedMeals: any;
-  recommendedMealsTitle: any;
-  recommendedMealItem: any;
-  recommendedMealName: any;
-  recommendedMealMacros: any;
-  recommendedMealIngredients: any;
-  recommendedMealIngredient: any;
-  recommendationsList: any;
-  foodCard: any;
-  foodHeader: any;
-  foodName: any;
-  foodCalories: any;
-  nutritionInfo: any;
-  nutritionItem: any;
-  nutritionLabel: any;
-  nutritionValue: any;
-  ingredientsInfo: any;
-  ingredientsTitle: any;
-  ingredientText: any;
-  regenerateButton: any;
-  regenerateButtonText: any;
-  recommendationsContainer: any;
-  header: any;
-  headerTitle: any;
-  headerSubtitle: any;
-  emptyMealsText: any;
-}
+  interface Styles {
+    container: any;
+    modalHeader: any;
+    loadingContainer: any;
+    loadingText: any;
+    emptyContainer: any;
+    emptyTitle: any;
+    emptyDescription: any;
+    setupSection: any;
+    setupTitle: any;
+    setupDescription: any;
+    setupButton: any;
+    setupButtonText: any;
+    generateButton: any;
+    generateButtonText: any;
+    toggleButton: any;
+    toggleButtonText: any;
+    profileInfo: any;
+    profileText: any;
+    recommendedMeals: any;
+    recommendedMealsTitle: any;
+    recommendedMealItem: any;
+    recommendedMealName: any;
+    recommendedMealMacros: any;
+    recommendedMealIngredients: any;
+    recommendedMealIngredient: any;
+    recommendationsList: any;
+    foodCard: any;
+    foodHeader: any;
+    foodName: any;
+    foodCalories: any;
+    nutritionInfo: any;
+    nutritionItem: any;
+    nutritionLabel: any;
+    nutritionValue: any;
+    ingredientsInfo: any;
+    ingredientsTitle: any;
+    ingredientText: any;
+    regenerateButton: any;
+    regenerateButtonText: any;
+    recommendationsContainer: any;
+    header: any;
+    headerTitle: any;
+    headerSubtitle: any;
+    emptyMealsText: any;
+  }

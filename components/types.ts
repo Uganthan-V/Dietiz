@@ -85,4 +85,5 @@ export interface Meal {
   time: string;
   hasFood: boolean;
   food?: FoodItem | null;
+  consumed: boolean;
 }
