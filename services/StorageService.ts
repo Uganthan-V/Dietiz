@@ -1,3 +1,260 @@
+// // // // // // // import * as SecureStore from 'expo-secure-store';
+
+// // // // // // // interface PersonalInfo {
+// // // // // // //   name: string;
+// // // // // // //   age: string;
+// // // // // // //   gender: string;
+// // // // // // //   weight: string;
+// // // // // // //   height: string;
+// // // // // // //   activityLevel: string;
+// // // // // // //   goal: string;
+// // // // // // //   dietaryRestrictions: string[];
+// // // // // // //   allergies: string[];
+// // // // // // //   targetCalories: string; // Calculated automatically based on user data
+// // // // // // // }
+
+// // // // // // // interface Meal {
+// // // // // // //   id: string;
+// // // // // // //   title: string;
+// // // // // // //   time: string;
+// // // // // // //   food?: any;
+// // // // // // //   hasFood: boolean;
+// // // // // // // }
+
+// // // // // // // class StorageService {
+// // // // // // //   private static instance: StorageService;
+  
+// // // // // // //   // Storage keys
+// // // // // // //   private readonly PERSONAL_INFO_KEY = 'personal_info';
+// // // // // // //   private readonly MEALS_KEY = 'meals_data';
+// // // // // // //   private readonly GEMINI_API_KEY = 'gemini_api_key';
+// // // // // // //   private readonly FIRST_TIME_USER = 'first_time_user';
+
+// // // // // // //   private constructor() {}
+
+// // // // // // //   static getInstance(): StorageService {
+// // // // // // //     if (!StorageService.instance) {
+// // // // // // //       StorageService.instance = new StorageService();
+// // // // // // //     }
+// // // // // // //     return StorageService.instance;
+// // // // // // //   }
+
+// // // // // // //   // Personal Information Storage
+// // // // // // //   async savePersonalInfo(personalInfo: PersonalInfo): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       await SecureStore.setItemAsync(this.PERSONAL_INFO_KEY, JSON.stringify(personalInfo));
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error saving personal info:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   async getPersonalInfo(): Promise<PersonalInfo | null> {
+// // // // // // //     try {
+// // // // // // //       const data = await SecureStore.getItemAsync(this.PERSONAL_INFO_KEY);
+// // // // // // //       return data ? JSON.parse(data) : null;
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error getting personal info:', error);
+// // // // // // //       return null;
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   async clearPersonalInfo(): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       await SecureStore.deleteItemAsync(this.PERSONAL_INFO_KEY);
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error clearing personal info:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   // Meals Data Storage
+// // // // // // //   async saveMeals(meals: Meal[]): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       await SecureStore.setItemAsync(this.MEALS_KEY, JSON.stringify(meals));
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error saving meals:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   async getMeals(): Promise<Meal[] | null> {
+// // // // // // //     try {
+// // // // // // //       const data = await SecureStore.getItemAsync(this.MEALS_KEY);
+// // // // // // //       return data ? JSON.parse(data) : null;
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error getting meals:', error);
+// // // // // // //       return null;
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   async clearMeals(): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       await SecureStore.deleteItemAsync(this.MEALS_KEY);
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error clearing meals:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   // Gemini API Key Storage
+// // // // // // //   async saveGeminiApiKey(apiKey: string): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       await SecureStore.setItemAsync(this.GEMINI_API_KEY, apiKey);
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error saving Gemini API key:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   async getGeminiApiKey(): Promise<string | null> {
+// // // // // // //     try {
+// // // // // // //       return await SecureStore.getItemAsync(this.GEMINI_API_KEY);
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error getting Gemini API key:', error);
+// // // // // // //       return null;
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   async clearGeminiApiKey(): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       await SecureStore.deleteItemAsync(this.GEMINI_API_KEY);
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error clearing Gemini API key:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   // First Time User Flag
+// // // // // // //   async setFirstTimeUser(isFirstTime: boolean): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       await SecureStore.setItemAsync(this.FIRST_TIME_USER, JSON.stringify(isFirstTime));
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error setting first time user flag:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   async isFirstTimeUser(): Promise<boolean> {
+// // // // // // //     try {
+// // // // // // //       const data = await SecureStore.getItemAsync(this.FIRST_TIME_USER);
+// // // // // // //       return data ? JSON.parse(data) : true;
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error getting first time user flag:', error);
+// // // // // // //       return true;
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   // Clear All Data
+// // // // // // //   async clearAllData(): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       await Promise.all([
+// // // // // // //         this.clearPersonalInfo(),
+// // // // // // //         this.clearMeals(),
+// // // // // // //         this.clearGeminiApiKey(),
+// // // // // // //         SecureStore.deleteItemAsync(this.FIRST_TIME_USER),
+// // // // // // //       ]);
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error clearing all data:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   // Export Data (for backup purposes)
+// // // // // // //   async exportData(): Promise<{
+// // // // // // //     personalInfo: PersonalInfo | null;
+// // // // // // //     meals: Meal[] | null;
+// // // // // // //     hasApiKey: boolean;
+// // // // // // //   }> {
+// // // // // // //     try {
+// // // // // // //       const [personalInfo, meals, apiKey] = await Promise.all([
+// // // // // // //         this.getPersonalInfo(),
+// // // // // // //         this.getMeals(),
+// // // // // // //         this.getGeminiApiKey(),
+// // // // // // //       ]);
+
+// // // // // // //       return {
+// // // // // // //         personalInfo,
+// // // // // // //         meals,
+// // // // // // //         hasApiKey: !!apiKey,
+// // // // // // //       };
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error exporting data:', error);
+// // // // // // //       return {
+// // // // // // //         personalInfo: null,
+// // // // // // //         meals: null,
+// // // // // // //         hasApiKey: false,
+// // // // // // //       };
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   // Import Data (for restore purposes)
+// // // // // // //   async importData(data: {
+// // // // // // //     personalInfo?: PersonalInfo;
+// // // // // // //     meals?: Meal[];
+// // // // // // //     apiKey?: string;
+// // // // // // //   }): Promise<void> {
+// // // // // // //     try {
+// // // // // // //       const promises: Promise<void>[] = [];
+
+// // // // // // //       if (data.personalInfo) {
+// // // // // // //         promises.push(this.savePersonalInfo(data.personalInfo));
+// // // // // // //       }
+
+// // // // // // //       if (data.meals) {
+// // // // // // //         promises.push(this.saveMeals(data.meals));
+// // // // // // //       }
+
+// // // // // // //       if (data.apiKey) {
+// // // // // // //         promises.push(this.saveGeminiApiKey(data.apiKey));
+// // // // // // //       }
+
+// // // // // // //       await Promise.all(promises);
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error importing data:', error);
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   // Check if user has completed setup
+// // // // // // //   async hasCompletedSetup(): Promise<boolean> {
+// // // // // // //     try {
+// // // // // // //       const personalInfo = await this.getPersonalInfo();
+// // // // // // //       return !!personalInfo;
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error checking setup completion:', error);
+// // // // // // //       return false;
+// // // // // // //     }
+// // // // // // //   }
+
+// // // // // // //   // Get storage statistics
+// // // // // // //   async getStorageStats(): Promise<{
+// // // // // // //     hasPersonalInfo: boolean;
+// // // // // // //     hasMeals: boolean;
+// // // // // // //     hasApiKey: boolean;
+// // // // // // //     isFirstTime: boolean;
+// // // // // // //   }> {
+// // // // // // //     try {
+// // // // // // //       const [personalInfo, meals, apiKey, isFirstTime] = await Promise.all([
+// // // // // // //         this.getPersonalInfo(),
+// // // // // // //         this.getMeals(),
+// // // // // // //         this.getGeminiApiKey(),
+// // // // // // //         this.isFirstTimeUser(),
+// // // // // // //       ]);
+
+// // // // // // //       return {
+// // // // // // //         hasPersonalInfo: !!personalInfo,
+// // // // // // //         hasMeals: !!meals,
+// // // // // // //         hasApiKey: !!apiKey,
+// // // // // // //         isFirstTime,
+// // // // // // //       };
+// // // // // // //     } catch (error) {
+// // // // // // //       console.error('Error getting storage stats:', error);
+// // // // // // //       return {
+// // // // // // //         hasPersonalInfo: false,
+// // // // // // //         hasMeals: false,
+// // // // // // //         hasApiKey: false,
+// // // // // // //         isFirstTime: true,
+// // // // // // //       };
+// // // // // // //     }
+// // // // // // //   }
+// // // // // // // }
+
+// // // // // // // export default StorageService.getInstance(); 
+
+
+
 // // // // // // import * as SecureStore from 'expo-secure-store';
 
 // // // // // // interface PersonalInfo {
@@ -29,6 +286,7 @@
 // // // // // //   private readonly MEALS_KEY = 'meals_data';
 // // // // // //   private readonly GEMINI_API_KEY = 'gemini_api_key';
 // // // // // //   private readonly FIRST_TIME_USER = 'first_time_user';
+// // // // // //   private readonly LAST_RESET_TIMESTAMP = 'last_reset_timestamp';
 
 // // // // // //   private constructor() {}
 
@@ -93,6 +351,25 @@
 // // // // // //     }
 // // // // // //   }
 
+// // // // // //   // Reset Timestamp Storage
+// // // // // //   async getLastResetTimestamp(): Promise<number | null> {
+// // // // // //     try {
+// // // // // //       const timestamp = await SecureStore.getItemAsync(this.LAST_RESET_TIMESTAMP);
+// // // // // //       return timestamp ? parseInt(timestamp, 10) : null;
+// // // // // //     } catch (error) {
+// // // // // //       console.error('Error getting last reset timestamp:', error);
+// // // // // //       return null;
+// // // // // //     }
+// // // // // //   }
+
+// // // // // //   async setLastResetTimestamp(timestamp: number): Promise<void> {
+// // // // // //     try {
+// // // // // //       await SecureStore.setItemAsync(this.LAST_RESET_TIMESTAMP, timestamp.toString());
+// // // // // //     } catch (error) {
+// // // // // //       console.error('Error setting last reset timestamp:', error);
+// // // // // //     }
+// // // // // //   }
+
 // // // // // //   // Gemini API Key Storage
 // // // // // //   async saveGeminiApiKey(apiKey: string): Promise<void> {
 // // // // // //     try {
@@ -146,6 +423,7 @@
 // // // // // //         this.clearMeals(),
 // // // // // //         this.clearGeminiApiKey(),
 // // // // // //         SecureStore.deleteItemAsync(this.FIRST_TIME_USER),
+// // // // // //         SecureStore.deleteItemAsync(this.LAST_RESET_TIMESTAMP),
 // // // // // //       ]);
 // // // // // //     } catch (error) {
 // // // // // //       console.error('Error clearing all data:', error);
@@ -251,9 +529,10 @@
 // // // // // //   }
 // // // // // // }
 
-// // // // // // export default StorageService.getInstance(); 
+// // // // // // export default StorageService.getInstance();
 
 
+// // // // // // StorageService.ts
 
 // // // // // import * as SecureStore from 'expo-secure-store';
 
@@ -532,8 +811,6 @@
 // // // // // export default StorageService.getInstance();
 
 
-// // // // // StorageService.ts
-
 // // // // import * as SecureStore from 'expo-secure-store';
 
 // // // // interface PersonalInfo {
@@ -546,21 +823,31 @@
 // // // //   goal: string;
 // // // //   dietaryRestrictions: string[];
 // // // //   allergies: string[];
-// // // //   targetCalories: string; // Calculated automatically based on user data
+// // // //   targetCalories: string;
+// // // // }
+
+// // // // interface FoodItem {
+// // // //   id: string;
+// // // //   name: string;
+// // // //   calories: number;
+// // // //   protein: number;
+// // // //   carbs: number;
+// // // //   fat: number;
+// // // //   category: string;
 // // // // }
 
 // // // // interface Meal {
 // // // //   id: string;
 // // // //   title: string;
 // // // //   time: string;
-// // // //   food?: any;
+// // // //   food?: FoodItem; // Updated from any to FoodItem
 // // // //   hasFood: boolean;
+// // // //   consumed: boolean; // Added consumed property
 // // // // }
 
 // // // // class StorageService {
 // // // //   private static instance: StorageService;
   
-// // // //   // Storage keys
 // // // //   private readonly PERSONAL_INFO_KEY = 'personal_info';
 // // // //   private readonly MEALS_KEY = 'meals_data';
 // // // //   private readonly GEMINI_API_KEY = 'gemini_api_key';
@@ -624,9 +911,33 @@
 
 // // // //   async clearMeals(): Promise<void> {
 // // // //     try {
-// // // //       await SecureStore.deleteItemAsync(this.MEALS_KEY);
+// // // //       const currentMeals = await this.getMeals();
+// // // //       if (currentMeals) {
+// // // //         const resetMeals = currentMeals.map(meal => ({
+// // // //           ...meal,
+// // // //           food: undefined,
+// // // //           hasFood: false,
+// // // //           consumed: false, // Reset consumed status
+// // // //         }));
+// // // //         await this.saveMeals(resetMeals);
+// // // //       }
 // // // //     } catch (error) {
 // // // //       console.error('Error clearing meals:', error);
+// // // //     }
+// // // //   }
+
+// // // //   async resetConsumedMeals(): Promise<void> {
+// // // //     try {
+// // // //       const currentMeals = await this.getMeals();
+// // // //       if (currentMeals) {
+// // // //         const resetMeals = currentMeals.map(meal => ({
+// // // //           ...meal,
+// // // //           consumed: false, // Reset only consumed status
+// // // //         }));
+// // // //         await this.saveMeals(resetMeals);
+// // // //       }
+// // // //     } catch (error) {
+// // // //       console.error('Error resetting consumed meals:', error);
 // // // //     }
 // // // //   }
 
@@ -709,7 +1020,7 @@
 // // // //     }
 // // // //   }
 
-// // // //   // Export Data (for backup purposes)
+// // // //   // Export Data
 // // // //   async exportData(): Promise<{
 // // // //     personalInfo: PersonalInfo | null;
 // // // //     meals: Meal[] | null;
@@ -737,7 +1048,7 @@
 // // // //     }
 // // // //   }
 
-// // // //   // Import Data (for restore purposes)
+// // // //   // Import Data
 // // // //   async importData(data: {
 // // // //     personalInfo?: PersonalInfo;
 // // // //     meals?: Meal[];
@@ -810,7 +1121,6 @@
 
 // // // // export default StorageService.getInstance();
 
-
 // // // import * as SecureStore from 'expo-secure-store';
 
 // // // interface PersonalInfo {
@@ -836,13 +1146,14 @@
 // // //   category: string;
 // // // }
 
+// // // // ✅ FIXED: Match MealPlanContext exactly
 // // // interface Meal {
 // // //   id: string;
 // // //   title: string;
 // // //   time: string;
-// // //   food?: FoodItem; // Updated from any to FoodItem
+// // //   food: FoodItem | null;
 // // //   hasFood: boolean;
-// // //   consumed: boolean; // Added consumed property
+// // //   consumed: boolean;
 // // // }
 
 // // // class StorageService {
@@ -853,6 +1164,10 @@
 // // //   private readonly GEMINI_API_KEY = 'gemini_api_key';
 // // //   private readonly FIRST_TIME_USER = 'first_time_user';
 // // //   private readonly LAST_RESET_TIMESTAMP = 'last_reset_timestamp';
+// // //   // Add these to your existing StorageService class (at the top with other keys)
+// // // private readonly QUOTE_DATE_KEY = 'daily_quote_date';
+// // // private readonly DAILY_QUOTE_KEY = 'daily_quote';
+
 
 // // //   private constructor() {}
 
@@ -863,6 +1178,35 @@
 // // //     return StorageService.instance;
 // // //   }
 
+// // // // Add these methods to your StorageService class
+// // // async saveDailyQuote(date: string, quote: string): Promise<void> {
+// // //   try {
+// // //     await Promise.all([
+// // //       SecureStore.setItemAsync(this.QUOTE_DATE_KEY, date),
+// // //       SecureStore.setItemAsync(this.DAILY_QUOTE_KEY, quote)
+// // //     ]);
+// // //   } catch (error) {
+// // //     console.error('Error saving daily quote:', error);
+// // //   }
+// // // }
+
+// // // async getQuoteDate(): Promise<string | null> {
+// // //   try {
+// // //     return await SecureStore.getItemAsync(this.QUOTE_DATE_KEY);
+// // //   } catch (error) {
+// // //     console.error('Error getting quote date:', error);
+// // //     return null;
+// // //   }
+// // // }
+
+// // // async getDailyQuote(): Promise<string | null> {
+// // //   try {
+// // //     return await SecureStore.getItemAsync(this.DAILY_QUOTE_KEY);
+// // //   } catch (error) {
+// // //     console.error('Error getting daily quote:', error);
+// // //     return null;
+// // //   }
+// // // }
 // // //   // Personal Information Storage
 // // //   async savePersonalInfo(personalInfo: PersonalInfo): Promise<void> {
 // // //     try {
@@ -915,9 +1259,9 @@
 // // //       if (currentMeals) {
 // // //         const resetMeals = currentMeals.map(meal => ({
 // // //           ...meal,
-// // //           food: undefined,
+// // //           food: null,        // ✅ FIXED: null not undefined
 // // //           hasFood: false,
-// // //           consumed: false, // Reset consumed status
+// // //           consumed: false,
 // // //         }));
 // // //         await this.saveMeals(resetMeals);
 // // //       }
@@ -932,7 +1276,7 @@
 // // //       if (currentMeals) {
 // // //         const resetMeals = currentMeals.map(meal => ({
 // // //           ...meal,
-// // //           consumed: false, // Reset only consumed status
+// // //           consumed: false,
 // // //         }));
 // // //         await this.saveMeals(resetMeals);
 // // //       }
@@ -941,7 +1285,7 @@
 // // //     }
 // // //   }
 
-// // //   // Reset Timestamp Storage
+// // //   // ... rest of methods remain the same
 // // //   async getLastResetTimestamp(): Promise<number | null> {
 // // //     try {
 // // //       const timestamp = await SecureStore.getItemAsync(this.LAST_RESET_TIMESTAMP);
@@ -960,7 +1304,6 @@
 // // //     }
 // // //   }
 
-// // //   // Gemini API Key Storage
 // // //   async saveGeminiApiKey(apiKey: string): Promise<void> {
 // // //     try {
 // // //       await SecureStore.setItemAsync(this.GEMINI_API_KEY, apiKey);
@@ -986,7 +1329,6 @@
 // // //     }
 // // //   }
 
-// // //   // First Time User Flag
 // // //   async setFirstTimeUser(isFirstTime: boolean): Promise<void> {
 // // //     try {
 // // //       await SecureStore.setItemAsync(this.FIRST_TIME_USER, JSON.stringify(isFirstTime));
@@ -1005,7 +1347,6 @@
 // // //     }
 // // //   }
 
-// // //   // Clear All Data
 // // //   async clearAllData(): Promise<void> {
 // // //     try {
 // // //       await Promise.all([
@@ -1020,7 +1361,6 @@
 // // //     }
 // // //   }
 
-// // //   // Export Data
 // // //   async exportData(): Promise<{
 // // //     personalInfo: PersonalInfo | null;
 // // //     meals: Meal[] | null;
@@ -1048,7 +1388,6 @@
 // // //     }
 // // //   }
 
-// // //   // Import Data
 // // //   async importData(data: {
 // // //     personalInfo?: PersonalInfo;
 // // //     meals?: Meal[];
@@ -1075,7 +1414,6 @@
 // // //     }
 // // //   }
 
-// // //   // Check if user has completed setup
 // // //   async hasCompletedSetup(): Promise<boolean> {
 // // //     try {
 // // //       const personalInfo = await this.getPersonalInfo();
@@ -1086,7 +1424,6 @@
 // // //     }
 // // //   }
 
-// // //   // Get storage statistics
 // // //   async getStorageStats(): Promise<{
 // // //     hasPersonalInfo: boolean;
 // // //     hasMeals: boolean;
@@ -1156,18 +1493,28 @@
 // //   consumed: boolean;
 // // }
 
+// // // ✅ NEW: Meal History Interface
+// // interface MealHistoryEntry {
+// //   id: string;
+// //   title: string;
+// //   time: string;
+// //   food: FoodItem | null;
+// //   hasFood: boolean;
+// //   consumed: boolean;
+// //   date: string; // YYYY-MM-DD format
+// // }
+
 // // class StorageService {
 // //   private static instance: StorageService;
   
 // //   private readonly PERSONAL_INFO_KEY = 'personal_info';
 // //   private readonly MEALS_KEY = 'meals_data';
+// //   private readonly MEALS_HISTORY_KEY = 'meals_history'; // ✅ NEW
 // //   private readonly GEMINI_API_KEY = 'gemini_api_key';
 // //   private readonly FIRST_TIME_USER = 'first_time_user';
 // //   private readonly LAST_RESET_TIMESTAMP = 'last_reset_timestamp';
-// //   // Add these to your existing StorageService class (at the top with other keys)
-// // private readonly QUOTE_DATE_KEY = 'daily_quote_date';
-// // private readonly DAILY_QUOTE_KEY = 'daily_quote';
-
+// //   private readonly QUOTE_DATE_KEY = 'daily_quote_date';
+// //   private readonly DAILY_QUOTE_KEY = 'daily_quote';
 
 // //   private constructor() {}
 
@@ -1178,35 +1525,124 @@
 // //     return StorageService.instance;
 // //   }
 
-// // // Add these methods to your StorageService class
-// // async saveDailyQuote(date: string, quote: string): Promise<void> {
-// //   try {
-// //     await Promise.all([
-// //       SecureStore.setItemAsync(this.QUOTE_DATE_KEY, date),
-// //       SecureStore.setItemAsync(this.DAILY_QUOTE_KEY, quote)
-// //     ]);
-// //   } catch (error) {
-// //     console.error('Error saving daily quote:', error);
+// //   // ✅ NEW: Daily Quote Methods (already added)
+// //   async saveDailyQuote(date: string, quote: string): Promise<void> {
+// //     try {
+// //       await Promise.all([
+// //         SecureStore.setItemAsync(this.QUOTE_DATE_KEY, date),
+// //         SecureStore.setItemAsync(this.DAILY_QUOTE_KEY, quote)
+// //       ]);
+// //     } catch (error) {
+// //       console.error('Error saving daily quote:', error);
+// //     }
 // //   }
-// // }
 
-// // async getQuoteDate(): Promise<string | null> {
-// //   try {
-// //     return await SecureStore.getItemAsync(this.QUOTE_DATE_KEY);
-// //   } catch (error) {
-// //     console.error('Error getting quote date:', error);
-// //     return null;
+// //   async getQuoteDate(): Promise<string | null> {
+// //     try {
+// //       return await SecureStore.getItemAsync(this.QUOTE_DATE_KEY);
+// //     } catch (error) {
+// //       console.error('Error getting quote date:', error);
+// //       return null;
+// //     }
 // //   }
-// // }
 
-// // async getDailyQuote(): Promise<string | null> {
-// //   try {
-// //     return await SecureStore.getItemAsync(this.DAILY_QUOTE_KEY);
-// //   } catch (error) {
-// //     console.error('Error getting daily quote:', error);
-// //     return null;
+// //   async getDailyQuote(): Promise<string | null> {
+// //     try {
+// //       return await SecureStore.getItemAsync(this.DAILY_QUOTE_KEY);
+// //     } catch (error) {
+// //       console.error('Error getting daily quote:', error);
+// //       return null;
+// //     }
 // //   }
-// // }
+
+// //   // ✅ NEW: MEAL HISTORY METHODS
+// //   async saveMealsHistory(history: MealHistoryEntry[]): Promise<void> {
+// //     try {
+// //       await SecureStore.setItemAsync(this.MEALS_HISTORY_KEY, JSON.stringify(history));
+// //     } catch (error) {
+// //       console.error('Error saving meals history:', error);
+// //     }
+// //   }
+
+// //   async getMealsHistory(): Promise<MealHistoryEntry[]> {
+// //     try {
+// //       const data = await SecureStore.getItemAsync(this.MEALS_HISTORY_KEY);
+// //       return data ? JSON.parse(data) : [];
+// //     } catch (error) {
+// //       console.error('Error getting meals history:', error);
+// //       return [];
+// //     }
+// //   }
+
+// //   async addToMealsHistory(meal: Meal, date: string): Promise<void> {
+// //     try {
+// //       const history = await this.getMealsHistory();
+// //       const historyEntry: MealHistoryEntry = {
+// //         ...meal,
+// //         date,
+// //       };
+      
+// //       // Remove existing entry for same meal + date if exists
+// //       const filteredHistory = history.filter(
+// //         h => !(h.id === meal.id && h.date === date)
+// //       );
+      
+// //       // Add new entry
+// //       filteredHistory.push(historyEntry);
+      
+// //       await this.saveMealsHistory(filteredHistory);
+// //     } catch (error) {
+// //       console.error('Error adding to meals history:', error);
+// //     }
+// //   }
+
+// //   async updateMealHistory(mealId: string, date: string, updates: Partial<Meal>): Promise<void> {
+// //     try {
+// //       const history = await this.getMealsHistory();
+// //       const updatedHistory = history.map(entry => 
+// //         entry.id === mealId && entry.date === date
+// //           ? { ...entry, ...updates }
+// //           : entry
+// //       );
+// //       await this.saveMealsHistory(updatedHistory);
+// //     } catch (error) {
+// //       console.error('Error updating meal history:', error);
+// //     }
+// //   }
+
+// //   async clearMealsHistory(): Promise<void> {
+// //     try {
+// //       await SecureStore.deleteItemAsync(this.MEALS_HISTORY_KEY);
+// //     } catch (error) {
+// //       console.error('Error clearing meals history:', error);
+// //     }
+// //   }
+
+// //   async clearMealsHistoryForDate(date: string): Promise<void> {
+// //     try {
+// //       const history = await this.getMealsHistory();
+// //       const filteredHistory = history.filter(entry => entry.date !== date);
+// //       await this.saveMealsHistory(filteredHistory);
+// //     } catch (error) {
+// //       console.error('Error clearing meals history for date:', error);
+// //     }
+// //   }
+
+// //   // ✅ NEW: Auto-save current meals to history (call this daily)
+// //   async saveCurrentMealsToHistory(date: string): Promise<void> {
+// //     try {
+// //       const currentMeals = await this.getMeals();
+// //       if (currentMeals) {
+// //         const historyPromises = currentMeals.map(meal => 
+// //           this.addToMealsHistory(meal, date)
+// //         );
+// //         await Promise.all(historyPromises);
+// //       }
+// //     } catch (error) {
+// //       console.error('Error saving current meals to history:', error);
+// //     }
+// //   }
+
 // //   // Personal Information Storage
 // //   async savePersonalInfo(personalInfo: PersonalInfo): Promise<void> {
 // //     try {
@@ -1259,7 +1695,7 @@
 // //       if (currentMeals) {
 // //         const resetMeals = currentMeals.map(meal => ({
 // //           ...meal,
-// //           food: null,        // ✅ FIXED: null not undefined
+// //           food: null,
 // //           hasFood: false,
 // //           consumed: false,
 // //         }));
@@ -1285,7 +1721,6 @@
 // //     }
 // //   }
 
-// //   // ... rest of methods remain the same
 // //   async getLastResetTimestamp(): Promise<number | null> {
 // //     try {
 // //       const timestamp = await SecureStore.getItemAsync(this.LAST_RESET_TIMESTAMP);
@@ -1353,8 +1788,11 @@
 // //         this.clearPersonalInfo(),
 // //         this.clearMeals(),
 // //         this.clearGeminiApiKey(),
+// //         this.clearMealsHistory(), // ✅ NEW
 // //         SecureStore.deleteItemAsync(this.FIRST_TIME_USER),
 // //         SecureStore.deleteItemAsync(this.LAST_RESET_TIMESTAMP),
+// //         SecureStore.deleteItemAsync(this.QUOTE_DATE_KEY),
+// //         SecureStore.deleteItemAsync(this.DAILY_QUOTE_KEY),
 // //       ]);
 // //     } catch (error) {
 // //       console.error('Error clearing all data:', error);
@@ -1364,18 +1802,21 @@
 // //   async exportData(): Promise<{
 // //     personalInfo: PersonalInfo | null;
 // //     meals: Meal[] | null;
+// //     mealsHistory: MealHistoryEntry[];
 // //     hasApiKey: boolean;
 // //   }> {
 // //     try {
-// //       const [personalInfo, meals, apiKey] = await Promise.all([
+// //       const [personalInfo, meals, history, apiKey] = await Promise.all([
 // //         this.getPersonalInfo(),
 // //         this.getMeals(),
+// //         this.getMealsHistory(),
 // //         this.getGeminiApiKey(),
 // //       ]);
 
 // //       return {
 // //         personalInfo,
 // //         meals,
+// //         mealsHistory: history,
 // //         hasApiKey: !!apiKey,
 // //       };
 // //     } catch (error) {
@@ -1383,6 +1824,7 @@
 // //       return {
 // //         personalInfo: null,
 // //         meals: null,
+// //         mealsHistory: [],
 // //         hasApiKey: false,
 // //       };
 // //     }
@@ -1391,6 +1833,7 @@
 // //   async importData(data: {
 // //     personalInfo?: PersonalInfo;
 // //     meals?: Meal[];
+// //     mealsHistory?: MealHistoryEntry[];
 // //     apiKey?: string;
 // //   }): Promise<void> {
 // //     try {
@@ -1402,6 +1845,10 @@
 
 // //       if (data.meals) {
 // //         promises.push(this.saveMeals(data.meals));
+// //       }
+
+// //       if (data.mealsHistory) {
+// //         promises.push(this.saveMealsHistory(data.mealsHistory));
 // //       }
 
 // //       if (data.apiKey) {
@@ -1427,13 +1874,15 @@
 // //   async getStorageStats(): Promise<{
 // //     hasPersonalInfo: boolean;
 // //     hasMeals: boolean;
+// //     hasMealsHistory: boolean;
 // //     hasApiKey: boolean;
 // //     isFirstTime: boolean;
 // //   }> {
 // //     try {
-// //       const [personalInfo, meals, apiKey, isFirstTime] = await Promise.all([
+// //       const [personalInfo, meals, history, apiKey, isFirstTime] = await Promise.all([
 // //         this.getPersonalInfo(),
 // //         this.getMeals(),
+// //         this.getMealsHistory(),
 // //         this.getGeminiApiKey(),
 // //         this.isFirstTimeUser(),
 // //       ]);
@@ -1441,6 +1890,7 @@
 // //       return {
 // //         hasPersonalInfo: !!personalInfo,
 // //         hasMeals: !!meals,
+// //         hasMealsHistory: history.length > 0,
 // //         hasApiKey: !!apiKey,
 // //         isFirstTime,
 // //       };
@@ -1449,6 +1899,7 @@
 // //       return {
 // //         hasPersonalInfo: false,
 // //         hasMeals: false,
+// //         hasMealsHistory: false,
 // //         hasApiKey: false,
 // //         isFirstTime: true,
 // //       };
@@ -1456,7 +1907,9 @@
 // //   }
 // // }
 
+
 // // export default StorageService.getInstance();
+
 
 // import * as SecureStore from 'expo-secure-store';
 
@@ -1483,7 +1936,6 @@
 //   category: string;
 // }
 
-// // ✅ FIXED: Match MealPlanContext exactly
 // interface Meal {
 //   id: string;
 //   title: string;
@@ -1493,7 +1945,6 @@
 //   consumed: boolean;
 // }
 
-// // ✅ NEW: Meal History Interface
 // interface MealHistoryEntry {
 //   id: string;
 //   title: string;
@@ -1501,7 +1952,7 @@
 //   food: FoodItem | null;
 //   hasFood: boolean;
 //   consumed: boolean;
-//   date: string; // YYYY-MM-DD format
+//   date: string;
 // }
 
 // class StorageService {
@@ -1509,12 +1960,13 @@
   
 //   private readonly PERSONAL_INFO_KEY = 'personal_info';
 //   private readonly MEALS_KEY = 'meals_data';
-//   private readonly MEALS_HISTORY_KEY = 'meals_history'; // ✅ NEW
+//   private readonly MEALS_HISTORY_KEY = 'meals_history';
 //   private readonly GEMINI_API_KEY = 'gemini_api_key';
 //   private readonly FIRST_TIME_USER = 'first_time_user';
 //   private readonly LAST_RESET_TIMESTAMP = 'last_reset_timestamp';
 //   private readonly QUOTE_DATE_KEY = 'daily_quote_date';
 //   private readonly DAILY_QUOTE_KEY = 'daily_quote';
+//   private readonly PERMANENT_PREVIOUS_MEALS_KEY = 'permanent_previous_meals_v3'; // ✅ NEW
 
 //   private constructor() {}
 
@@ -1525,7 +1977,69 @@
 //     return StorageService.instance;
 //   }
 
-//   // ✅ NEW: Daily Quote Methods (already added)
+//   // ✅ PERMANENT PREVIOUS MEALS METHODS
+//   async savePreviousMeal(food: FoodItem): Promise<void> {
+//     try {
+//       const data = await SecureStore.getItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY);
+//       const allMeals: FoodItem[] = data ? JSON.parse(data) : [];
+      
+//       // Remove exact duplicate
+//       const filteredMeals = allMeals.filter(m => 
+//         !(m.id === food.id && m.name === food.name && m.calories === food.calories)
+//       );
+      
+//       // Add new meal at beginning
+//       filteredMeals.unshift(food);
+      
+//       // Keep only last 100 meals total
+//       if (filteredMeals.length > 100) filteredMeals.length = 100;
+      
+//       await SecureStore.setItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY, JSON.stringify(filteredMeals));
+//     } catch (error) {
+//       console.error('Error saving previous meal:', error);
+//     }
+//   }
+
+//   async getPreviousMealsByCategory(category: string): Promise<FoodItem[]> {
+//     try {
+//       const data = await SecureStore.getItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY);
+//       if (!data) return [];
+      
+//       const allMeals: FoodItem[] = JSON.parse(data);
+//       return allMeals.filter(meal => 
+//         meal.category.toLowerCase().includes(category.toLowerCase())
+//       ).slice(0, 10); // Max 10 per category
+//     } catch (error) {
+//       console.error('Error getting previous meals:', error);
+//       return [];
+//     }
+//   }
+
+//   async clearPreviousMealsByCategory(category: string): Promise<void> {
+//     try {
+//       const data = await SecureStore.getItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY);
+//       if (!data) return;
+      
+//       const allMeals: FoodItem[] = JSON.parse(data);
+//       const filteredMeals = allMeals.filter(meal => 
+//         !meal.category.toLowerCase().includes(category.toLowerCase())
+//       );
+      
+//       await SecureStore.setItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY, JSON.stringify(filteredMeals));
+//     } catch (error) {
+//       console.error('Error clearing previous meals:', error);
+//     }
+//   }
+
+//   async clearAllPreviousMeals(): Promise<void> {
+//     try {
+//       await SecureStore.deleteItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY);
+//     } catch (error) {
+//       console.error('Error clearing all previous meals:', error);
+//     }
+//   }
+
+//   // Daily Quote Methods
 //   async saveDailyQuote(date: string, quote: string): Promise<void> {
 //     try {
 //       await Promise.all([
@@ -1555,7 +2069,7 @@
 //     }
 //   }
 
-//   // ✅ NEW: MEAL HISTORY METHODS
+//   // MEAL HISTORY METHODS
 //   async saveMealsHistory(history: MealHistoryEntry[]): Promise<void> {
 //     try {
 //       await SecureStore.setItemAsync(this.MEALS_HISTORY_KEY, JSON.stringify(history));
@@ -1582,14 +2096,11 @@
 //         date,
 //       };
       
-//       // Remove existing entry for same meal + date if exists
 //       const filteredHistory = history.filter(
 //         h => !(h.id === meal.id && h.date === date)
 //       );
       
-//       // Add new entry
 //       filteredHistory.push(historyEntry);
-      
 //       await this.saveMealsHistory(filteredHistory);
 //     } catch (error) {
 //       console.error('Error adding to meals history:', error);
@@ -1628,7 +2139,6 @@
 //     }
 //   }
 
-//   // ✅ NEW: Auto-save current meals to history (call this daily)
 //   async saveCurrentMealsToHistory(date: string): Promise<void> {
 //     try {
 //       const currentMeals = await this.getMeals();
@@ -1788,7 +2298,8 @@
 //         this.clearPersonalInfo(),
 //         this.clearMeals(),
 //         this.clearGeminiApiKey(),
-//         this.clearMealsHistory(), // ✅ NEW
+//         this.clearMealsHistory(),
+//         this.clearAllPreviousMeals(), // ✅ NEW
 //         SecureStore.deleteItemAsync(this.FIRST_TIME_USER),
 //         SecureStore.deleteItemAsync(this.LAST_RESET_TIMESTAMP),
 //         SecureStore.deleteItemAsync(this.QUOTE_DATE_KEY),
@@ -1907,11 +2418,10 @@
 //   }
 // }
 
-
 // export default StorageService.getInstance();
 
-
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface PersonalInfo {
   name: string;
@@ -1957,16 +2467,19 @@ interface MealHistoryEntry {
 
 class StorageService {
   private static instance: StorageService;
-  
-  private readonly PERSONAL_INFO_KEY = 'personal_info';
-  private readonly MEALS_KEY = 'meals_data';
-  private readonly MEALS_HISTORY_KEY = 'meals_history';
+
+  // SecureStore keys (small & sensitive)
   private readonly GEMINI_API_KEY = 'gemini_api_key';
   private readonly FIRST_TIME_USER = 'first_time_user';
   private readonly LAST_RESET_TIMESTAMP = 'last_reset_timestamp';
   private readonly QUOTE_DATE_KEY = 'daily_quote_date';
   private readonly DAILY_QUOTE_KEY = 'daily_quote';
-  private readonly PERMANENT_PREVIOUS_MEALS_KEY = 'permanent_previous_meals_v3'; // ✅ NEW
+
+  // AsyncStorage keys (large or non-sensitive)
+  private readonly PERSONAL_INFO_KEY = 'personal_info';
+  private readonly MEALS_KEY = 'meals_data';
+  private readonly MEALS_HISTORY_KEY = 'meals_history';
+  private readonly PERMANENT_PREVIOUS_MEALS_KEY = 'permanent_previous_meals_v3';
 
   private constructor() {}
 
@@ -1977,24 +2490,24 @@ class StorageService {
     return StorageService.instance;
   }
 
-  // ✅ PERMANENT PREVIOUS MEALS METHODS
+  // ========== PERMANENT PREVIOUS MEALS (AsyncStorage) ==========
   async savePreviousMeal(food: FoodItem): Promise<void> {
     try {
-      const data = await SecureStore.getItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY);
+      const data = await AsyncStorage.getItem(this.PERMANENT_PREVIOUS_MEALS_KEY);
       const allMeals: FoodItem[] = data ? JSON.parse(data) : [];
-      
-      // Remove exact duplicate
-      const filteredMeals = allMeals.filter(m => 
-        !(m.id === food.id && m.name === food.name && m.calories === food.calories)
+
+      // Remove exact duplicates
+      const filteredMeals = allMeals.filter(
+        (m) => !(m.id === food.id && m.name === food.name && m.calories === food.calories)
       );
-      
-      // Add new meal at beginning
+
+      // Add new meal at front
       filteredMeals.unshift(food);
-      
-      // Keep only last 100 meals total
+
+      // Limit to 100
       if (filteredMeals.length > 100) filteredMeals.length = 100;
-      
-      await SecureStore.setItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY, JSON.stringify(filteredMeals));
+
+      await AsyncStorage.setItem(this.PERMANENT_PREVIOUS_MEALS_KEY, JSON.stringify(filteredMeals));
     } catch (error) {
       console.error('Error saving previous meal:', error);
     }
@@ -2002,13 +2515,13 @@ class StorageService {
 
   async getPreviousMealsByCategory(category: string): Promise<FoodItem[]> {
     try {
-      const data = await SecureStore.getItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY);
+      const data = await AsyncStorage.getItem(this.PERMANENT_PREVIOUS_MEALS_KEY);
       if (!data) return [];
-      
+
       const allMeals: FoodItem[] = JSON.parse(data);
-      return allMeals.filter(meal => 
-        meal.category.toLowerCase().includes(category.toLowerCase())
-      ).slice(0, 10); // Max 10 per category
+      return allMeals
+        .filter((meal) => meal.category.toLowerCase().includes(category.toLowerCase()))
+        .slice(0, 10);
     } catch (error) {
       console.error('Error getting previous meals:', error);
       return [];
@@ -2017,34 +2530,34 @@ class StorageService {
 
   async clearPreviousMealsByCategory(category: string): Promise<void> {
     try {
-      const data = await SecureStore.getItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY);
+      const data = await AsyncStorage.getItem(this.PERMANENT_PREVIOUS_MEALS_KEY);
       if (!data) return;
-      
+
       const allMeals: FoodItem[] = JSON.parse(data);
-      const filteredMeals = allMeals.filter(meal => 
-        !meal.category.toLowerCase().includes(category.toLowerCase())
+      const filtered = allMeals.filter(
+        (meal) => !meal.category.toLowerCase().includes(category.toLowerCase())
       );
-      
-      await SecureStore.setItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY, JSON.stringify(filteredMeals));
+
+      await AsyncStorage.setItem(this.PERMANENT_PREVIOUS_MEALS_KEY, JSON.stringify(filtered));
     } catch (error) {
-      console.error('Error clearing previous meals:', error);
+      console.error('Error clearing previous meals by category:', error);
     }
   }
 
   async clearAllPreviousMeals(): Promise<void> {
     try {
-      await SecureStore.deleteItemAsync(this.PERMANENT_PREVIOUS_MEALS_KEY);
+      await AsyncStorage.removeItem(this.PERMANENT_PREVIOUS_MEALS_KEY);
     } catch (error) {
       console.error('Error clearing all previous meals:', error);
     }
   }
 
-  // Daily Quote Methods
+  // ========== DAILY QUOTE (SecureStore - small) ==========
   async saveDailyQuote(date: string, quote: string): Promise<void> {
     try {
       await Promise.all([
         SecureStore.setItemAsync(this.QUOTE_DATE_KEY, date),
-        SecureStore.setItemAsync(this.DAILY_QUOTE_KEY, quote)
+        SecureStore.setItemAsync(this.DAILY_QUOTE_KEY, quote),
       ]);
     } catch (error) {
       console.error('Error saving daily quote:', error);
@@ -2069,10 +2582,10 @@ class StorageService {
     }
   }
 
-  // MEAL HISTORY METHODS
+  // ========== MEALS HISTORY (AsyncStorage) ==========
   async saveMealsHistory(history: MealHistoryEntry[]): Promise<void> {
     try {
-      await SecureStore.setItemAsync(this.MEALS_HISTORY_KEY, JSON.stringify(history));
+      await AsyncStorage.setItem(this.MEALS_HISTORY_KEY, JSON.stringify(history));
     } catch (error) {
       console.error('Error saving meals history:', error);
     }
@@ -2080,7 +2593,7 @@ class StorageService {
 
   async getMealsHistory(): Promise<MealHistoryEntry[]> {
     try {
-      const data = await SecureStore.getItemAsync(this.MEALS_HISTORY_KEY);
+      const data = await AsyncStorage.getItem(this.MEALS_HISTORY_KEY);
       return data ? JSON.parse(data) : [];
     } catch (error) {
       console.error('Error getting meals history:', error);
@@ -2091,17 +2604,12 @@ class StorageService {
   async addToMealsHistory(meal: Meal, date: string): Promise<void> {
     try {
       const history = await this.getMealsHistory();
-      const historyEntry: MealHistoryEntry = {
-        ...meal,
-        date,
-      };
-      
-      const filteredHistory = history.filter(
-        h => !(h.id === meal.id && h.date === date)
-      );
-      
-      filteredHistory.push(historyEntry);
-      await this.saveMealsHistory(filteredHistory);
+      const entry: MealHistoryEntry = { ...meal, date };
+
+      const filtered = history.filter((h) => !(h.id === meal.id && h.date === date));
+      filtered.push(entry);
+
+      await this.saveMealsHistory(filtered);
     } catch (error) {
       console.error('Error adding to meals history:', error);
     }
@@ -2110,12 +2618,10 @@ class StorageService {
   async updateMealHistory(mealId: string, date: string, updates: Partial<Meal>): Promise<void> {
     try {
       const history = await this.getMealsHistory();
-      const updatedHistory = history.map(entry => 
-        entry.id === mealId && entry.date === date
-          ? { ...entry, ...updates }
-          : entry
+      const updated = history.map((entry) =>
+        entry.id === mealId && entry.date === date ? { ...entry, ...updates } : entry
       );
-      await this.saveMealsHistory(updatedHistory);
+      await this.saveMealsHistory(updated);
     } catch (error) {
       console.error('Error updating meal history:', error);
     }
@@ -2123,7 +2629,7 @@ class StorageService {
 
   async clearMealsHistory(): Promise<void> {
     try {
-      await SecureStore.deleteItemAsync(this.MEALS_HISTORY_KEY);
+      await AsyncStorage.removeItem(this.MEALS_HISTORY_KEY);
     } catch (error) {
       console.error('Error clearing meals history:', error);
     }
@@ -2132,10 +2638,10 @@ class StorageService {
   async clearMealsHistoryForDate(date: string): Promise<void> {
     try {
       const history = await this.getMealsHistory();
-      const filteredHistory = history.filter(entry => entry.date !== date);
-      await this.saveMealsHistory(filteredHistory);
+      const filtered = history.filter((entry) => entry.date !== date);
+      await this.saveMealsHistory(filtered);
     } catch (error) {
-      console.error('Error clearing meals history for date:', error);
+      console.error('Error clearing history for date:', error);
     }
   }
 
@@ -2143,20 +2649,17 @@ class StorageService {
     try {
       const currentMeals = await this.getMeals();
       if (currentMeals) {
-        const historyPromises = currentMeals.map(meal => 
-          this.addToMealsHistory(meal, date)
-        );
-        await Promise.all(historyPromises);
+        await Promise.all(currentMeals.map((meal) => this.addToMealsHistory(meal, date)));
       }
     } catch (error) {
       console.error('Error saving current meals to history:', error);
     }
   }
 
-  // Personal Information Storage
+  // ========== PERSONAL INFO (AsyncStorage - safer & consistent) ==========
   async savePersonalInfo(personalInfo: PersonalInfo): Promise<void> {
     try {
-      await SecureStore.setItemAsync(this.PERSONAL_INFO_KEY, JSON.stringify(personalInfo));
+      await AsyncStorage.setItem(this.PERSONAL_INFO_KEY, JSON.stringify(personalInfo));
     } catch (error) {
       console.error('Error saving personal info:', error);
     }
@@ -2164,7 +2667,7 @@ class StorageService {
 
   async getPersonalInfo(): Promise<PersonalInfo | null> {
     try {
-      const data = await SecureStore.getItemAsync(this.PERSONAL_INFO_KEY);
+      const data = await AsyncStorage.getItem(this.PERSONAL_INFO_KEY);
       return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting personal info:', error);
@@ -2174,16 +2677,16 @@ class StorageService {
 
   async clearPersonalInfo(): Promise<void> {
     try {
-      await SecureStore.deleteItemAsync(this.PERSONAL_INFO_KEY);
+      await AsyncStorage.removeItem(this.PERSONAL_INFO_KEY);
     } catch (error) {
       console.error('Error clearing personal info:', error);
     }
   }
 
-  // Meals Data Storage
+  // ========== CURRENT MEALS (AsyncStorage) ==========
   async saveMeals(meals: Meal[]): Promise<void> {
     try {
-      await SecureStore.setItemAsync(this.MEALS_KEY, JSON.stringify(meals));
+      await AsyncStorage.setItem(this.MEALS_KEY, JSON.stringify(meals));
     } catch (error) {
       console.error('Error saving meals:', error);
     }
@@ -2191,7 +2694,7 @@ class StorageService {
 
   async getMeals(): Promise<Meal[] | null> {
     try {
-      const data = await SecureStore.getItemAsync(this.MEALS_KEY);
+      const data = await AsyncStorage.getItem(this.MEALS_KEY);
       return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting meals:', error);
@@ -2203,7 +2706,7 @@ class StorageService {
     try {
       const currentMeals = await this.getMeals();
       if (currentMeals) {
-        const resetMeals = currentMeals.map(meal => ({
+        const resetMeals = currentMeals.map((meal) => ({
           ...meal,
           food: null,
           hasFood: false,
@@ -2220,7 +2723,7 @@ class StorageService {
     try {
       const currentMeals = await this.getMeals();
       if (currentMeals) {
-        const resetMeals = currentMeals.map(meal => ({
+        const resetMeals = currentMeals.map((meal) => ({
           ...meal,
           consumed: false,
         }));
@@ -2231,6 +2734,7 @@ class StorageService {
     }
   }
 
+  // ========== TIMESTAMPS & FLAGS (SecureStore) ==========
   async getLastResetTimestamp(): Promise<number | null> {
     try {
       const timestamp = await SecureStore.getItemAsync(this.LAST_RESET_TIMESTAMP);
@@ -2292,6 +2796,7 @@ class StorageService {
     }
   }
 
+  // ========== CLEAR ALL DATA ==========
   async clearAllData(): Promise<void> {
     try {
       await Promise.all([
@@ -2299,17 +2804,19 @@ class StorageService {
         this.clearMeals(),
         this.clearGeminiApiKey(),
         this.clearMealsHistory(),
-        this.clearAllPreviousMeals(), // ✅ NEW
+        this.clearAllPreviousMeals(),
         SecureStore.deleteItemAsync(this.FIRST_TIME_USER),
         SecureStore.deleteItemAsync(this.LAST_RESET_TIMESTAMP),
         SecureStore.deleteItemAsync(this.QUOTE_DATE_KEY),
         SecureStore.deleteItemAsync(this.DAILY_QUOTE_KEY),
+        AsyncStorage.removeItem(this.MEALS_KEY),
       ]);
     } catch (error) {
       console.error('Error clearing all data:', error);
     }
   }
 
+  // ========== EXPORT / IMPORT ==========
   async exportData(): Promise<{
     personalInfo: PersonalInfo | null;
     meals: Meal[] | null;
@@ -2332,12 +2839,7 @@ class StorageService {
       };
     } catch (error) {
       console.error('Error exporting data:', error);
-      return {
-        personalInfo: null,
-        meals: null,
-        mealsHistory: [],
-        hasApiKey: false,
-      };
+      return { personalInfo: null, meals: null, mealsHistory: [], hasApiKey: false };
     }
   }
 
@@ -2350,21 +2852,10 @@ class StorageService {
     try {
       const promises: Promise<void>[] = [];
 
-      if (data.personalInfo) {
-        promises.push(this.savePersonalInfo(data.personalInfo));
-      }
-
-      if (data.meals) {
-        promises.push(this.saveMeals(data.meals));
-      }
-
-      if (data.mealsHistory) {
-        promises.push(this.saveMealsHistory(data.mealsHistory));
-      }
-
-      if (data.apiKey) {
-        promises.push(this.saveGeminiApiKey(data.apiKey));
-      }
+      if (data.personalInfo) promises.push(this.savePersonalInfo(data.personalInfo));
+      if (data.meals) promises.push(this.saveMeals(data.meals));
+      if (data.mealsHistory) promises.push(this.saveMealsHistory(data.mealsHistory));
+      if (data.apiKey) promises.push(this.saveGeminiApiKey(data.apiKey));
 
       await Promise.all(promises);
     } catch (error) {
@@ -2374,10 +2865,10 @@ class StorageService {
 
   async hasCompletedSetup(): Promise<boolean> {
     try {
-      const personalInfo = await this.getPersonalInfo();
-      return !!personalInfo;
+      const info = await this.getPersonalInfo();
+      return !!info;
     } catch (error) {
-      console.error('Error checking setup completion:', error);
+      console.error('Error checking setup:', error);
       return false;
     }
   }
